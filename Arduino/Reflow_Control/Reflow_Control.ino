@@ -1,6 +1,66 @@
 #include <PID_v1.h>
 
-#define LEAD_FREE 1
+#define LOW_TEMP
+
+#ifdef LEAD_FREE
+#define TIME_0 0
+#define TEMP_0 25
+
+#define TIME_1 150
+#define TEMP_1 175
+
+#define TIME_2 330
+#define TEMP_2 200
+
+#define TIME_3 390
+#define TEMP_3 260
+
+#define TIME_4 430
+#define TEMP_4 260
+
+#define TIME_5 431
+#define TEMP_5 0
+#endif
+
+#ifdef LEADED
+#define TIME_0 0
+#define TEMP_0 25
+
+#define TIME_1 150
+#define TEMP_1 100
+
+#define TIME_2 330
+#define TEMP_2 140
+
+#define TIME_3 390
+#define TEMP_3 190
+
+#define TIME_4 430
+#define TEMP_4 190
+
+#define TIME_5 431
+#define TEMP_5 0
+#endif
+
+#ifdef LOW_TEMP
+#define TIME_0 0
+#define TEMP_0 25
+
+#define TIME_1 120
+#define TEMP_1 100
+
+#define TIME_2 270
+#define TEMP_2 140
+
+#define TIME_3 300
+#define TEMP_3 170
+
+#define TIME_4 330
+#define TEMP_4 170
+
+#define TIME_5 331
+#define TEMP_5 0
+#endif
 
 #define TEMP_SENSOR   A0
 #define HEATER_BOTTOM A4
@@ -53,37 +113,46 @@ int getMode() {
   }
 }
 
-#if LEAD_FREE
-float getReflowTemp(unsigned long time) {
-  if (time < 150000) {
-    return 25.0  + 1.00 * (time -      0) / 1000;
-  } else if (time >= 150000 && time < 330000) {
-    return 175.0 + 0.14 * (time - 150000) / 1000;
-  } else if (time >= 330000 && time < 390000) {
-    return 200.0 + 1.00 * (time - 330000) / 1000;
-  } else if (time >= 390000 && time < 430000) {
-    return 260.0;
-  } else if (time >= 450000) {
-    return 0.0;
+double getReflowTemp(unsigned long time) {
+  time /= 1000;
+  if (time <= TIME_0) {
+    return TEMP_0;
   }
-}
-#endif
 
-#if !LEAD_FREE
-float getReflowTemp(unsigned long time) {
-  if (time < 150000) {
-    return 25.0  + 1.00 * (time -      0) / 1000;
-  } else if (time >= 150000 && time < 330000) {
-    return 100.0 + 0.14 * (time - 150000) / 1000;
-  } else if (time >= 330000 && time < 390000) {
-    return 140.0 + 1.00 * (time - 330000) / 1000;
-  } else if (time >= 390000 && time < 430000) {
-    return 190.0;
-  } else if (time >= 450000) {
-    return 0.0;
+  if (time <= TIME_1) {
+    double m = (double)(TEMP_1 - TEMP_0) / (double)(TIME_1 - TIME_0);
+    double b = (double)TEMP_1 - m * TIME_1;
+    return m * time + b;
+  }
+
+  if (time <= TIME_2) {
+    double m = (double)(TEMP_2 - TEMP_1) / (double)(TIME_2 - TIME_1);
+    double b = (double)TEMP_2 - m * TIME_2;
+    return m * time + b;
+  }
+
+  if (time <= TIME_3) {
+    double m = (double)(TEMP_3 - TEMP_2) / (double)(TIME_3 - TIME_2);
+    double b = (double)TEMP_3 - m * TIME_3;
+    return m * time + b;
+  }
+
+  if (time <= TIME_4) {
+    double m = (double)(TEMP_4 - TEMP_3) / (double)(TIME_4 - TIME_3);
+    double b = (double)TEMP_4 - m * TIME_4;
+    return m * time + b;
+  }
+
+  if (time <= TIME_5) {
+    double m = (double)(TEMP_5 - TEMP_4) / (double)(TIME_5 - TIME_4);
+    double b = (double)TEMP_5 - m * TIME_5;
+    return m * time + b;
+  }
+
+  if (time > TIME_5) {
+    return TEMP_5;
   }
 }
-#endif
 
 void setup() {
   // Set the ADC reference voltage to the internal 1.1V source for greater accuracy
